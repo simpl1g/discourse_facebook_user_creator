@@ -5,12 +5,14 @@ module Facebook
     skip_before_filter :redirect_to_login_if_required, only: [:create]
 
     def create
+      user_params = params.permit(:user_params)
+
       user = User.new(user_params)
 
       user.password = SecureRandom.hex if user.password.blank?
 
       if user.save
-        Facebook::UserCreator.new(user, facebook_params).call
+        Facebook::UserCreator.new(user, user_params[:facebook]).call
 
         render json: {
           success: true,
