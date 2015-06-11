@@ -15,7 +15,7 @@ module Facebook
         render json: {
           success: true,
           active: user.active?,
-          message: activation.message,
+          message: 'ok',
           user_id: user.id
         }
       else
