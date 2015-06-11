@@ -5,14 +5,12 @@ module Facebook
     skip_before_filter :redirect_to_login_if_required, only: [:create]
 
     def create
-      user_params = params.permit(:user_params)
-
       user = User.new(user_params)
 
       user.password = SecureRandom.hex if user.password.blank?
 
       if user.save
-        Facebook::UserCreator.new(user, user_params[:facebook]).call
+        Facebook::UserCreator.new(user, facebook_params).call
 
         render json: {
           success: true,
@@ -38,6 +36,17 @@ module Facebook
       }
     rescue RestClient::Forbidden
       render json: { errors: [I18n.t("discourse_hub.access_token_problem")] }
+    end
+
+    private
+
+    def user_params
+      params.permit(:name, :email, :password, :username)
+            .merge(ip_address: request.remote_ip, registration_ip_address: request.remote_ip, active: true)
+    end
+
+    def facebook_params
+      params.require(:facebook).permit!
     end
 
   end
